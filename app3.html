@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-height, initial-scale=1.0">
-  <title>Bangla-ROM-ENG GLOSSARY</title>
+  <title>Bangla-BN Latin Dictionary</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -44,8 +44,8 @@
       border-radius: 4px;
       cursor: pointer;
       transition: background-color 0.3s;
-      margin-top: 100px;
-      margin-bottom: 30px;
+      margin-top: 100px; /* Increased margin to move button down */
+      margin-bottom: 30px; /* Maintain margin below */
     }
     button:hover {
       background-color: #0056b3;
@@ -53,7 +53,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 20px; /* Kept the same margin as before */
     }
     th, td {
       padding: 12px;
@@ -74,6 +74,7 @@
       text-align: center;
     }
     .suggestions {
+     
       width: calc(50% - 22px);
       max-height: 150px;
       overflow-y: auto;
@@ -89,22 +90,14 @@
     .suggestions div:hover {
       background-color: #f0f0f0;
     }
-    .search-options {
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>BENGALI-ROM-ENG GLOSSARY</h1>
+  <h1>Bangla-BN Latin Dictionary</h1>
   <div>
-    <select id="searchType" class="search-options">
-      <option value="bangla">Bangla</option>
-      <option value="bn_latin">BN Latin</option> <!-- Updated option -->
-      <option value="english">English</option>
-    </select>
-    <input type="text" id="search" placeholder="Enter word..." oninput="showSuggestions()" />
+    <input type="text" id="search" placeholder="Enter Bangla word..." oninput="showSuggestions()" />
     <div id="suggestions" class="suggestions"></div>
     <button onclick="searchWord()">Search</button>
   </div>
@@ -114,7 +107,7 @@
       <tr>
         <th>Bangla</th>
         <th>BN Latin</th>
-        <th>BN Latin-ALT</th>
+        <th>Alternative</th>
         <th>English Meaning</th>
       </tr>
     </thead>
@@ -135,12 +128,12 @@
     const rows = data.split("\n").slice(1); // Remove header row
 
     sheetData = rows.map(row => {
-      const [bangla, bn_latin_1, bn_latin_2, englishMeaning] = row.split(",");
+      const [bangla, bn_latin, alternative, englishMeaning] = row.split(",");
       return {
         bangla: bangla.trim(),
-        bn_latin_1: bn_latin_1.trim(),
-        bn_latin_2: bn_latin_2.trim(),
-        englishMeaning: englishMeaning.trim() || 'N/A'
+        bn_latin: bn_latin.trim(),
+        alternative: alternative.trim() || 'N/A',
+        englishMeaning: englishMeaning.trim() || 'N/A'  // Add English meaning
       };
     });
   }
@@ -158,25 +151,17 @@
       return;
     }
 
-    // Filter the data based on the selected search type
-    const searchType = document.getElementById('searchType').value;
+    // Filter the data based on partial matches
     const matchedData = sheetData.filter(row => {
-      // For English, we match against the English meaning
-      if (searchType === 'english') {
-        return row.englishMeaning.toLowerCase().includes(searchValue);
-      } else if (searchType === 'bn_latin') {
-        return row.bn_latin_1.toLowerCase().includes(searchValue); // Show only BN Latin 1 words
-      } else {
-        return row[searchType].toLowerCase().includes(searchValue);
-      }
+      return row.bangla.toLowerCase().includes(searchValue);
     });
 
     // Show suggestions if matches are found
     if (matchedData.length > 0) {
       matchedData.forEach(row => {
         const suggestionDiv = document.createElement('div');
-        suggestionDiv.textContent = searchType === 'english' ? row.englishMeaning : (searchType === 'bn_latin' ? row.bn_latin_1 : row[searchType]); // Adjusted to show BN Latin 1
-        suggestionDiv.onclick = () => selectSuggestion(searchType === 'english' ? row.englishMeaning : (searchType === 'bn_latin' ? row.bn_latin_1 : row[searchType]));
+        suggestionDiv.textContent = row.bangla;
+        suggestionDiv.onclick = () => selectSuggestion(row.bangla);
         suggestionsBox.appendChild(suggestionDiv);
       });
     }
@@ -190,8 +175,7 @@
 
   // Search function
   function searchWord() {
-    const searchValue = document.getElementById('search').value.trim().toLowerCase();
-    const searchType = document.getElementById('searchType').value;
+    const searchValue = document.getElementById('search').value.trim().toLowerCase(); // Trim spaces here
     const tableBody = document.getElementById('table-body');
     const noResultDiv = document.getElementById('no-result');
 
@@ -200,21 +184,13 @@
     noResultDiv.innerHTML = '';
 
     // Filter the search result
-    const filteredData = sheetData.filter(row => {
-      if (searchType === 'english') {
-        return row.englishMeaning.toLowerCase() === searchValue;
-      } else if (searchType === 'bn_latin') {
-        return row.bn_latin_1.toLowerCase() === searchValue; // Search only in BN Latin 1
-      } else {
-        return row[searchType].toLowerCase() === searchValue;
-      }
-    });
+    const filteredData = sheetData.filter(row => row.bangla.toLowerCase() === searchValue);
 
     if (filteredData.length > 0) {
-      // Display the searched word, BN Latin, and English meaning
+      // Display the searched word, BN Latin, alternative, and English meaning
       filteredData.forEach(row => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${row.bangla}</td><td>${row.bn_latin_1}</td><td>${row.bn_latin_2}</td><td>${row.englishMeaning}</td>`;
+        tr.innerHTML = `<td>${row.bangla}</td><td>${row.bn_latin}</td><td>${row.alternative}</td><td>${row.englishMeaning}</td>`;
         tableBody.appendChild(tr);
       });
     } else {
